@@ -219,11 +219,17 @@ public class Worker extends Channel {
 
   private void routeRecordDynamically(SinkRecord record) {
     String routeField = config.tablesRouteField();
+    String defaultDatabase = config.tablesDefaultDatabase();
     Preconditions.checkNotNull(routeField, "Route field cannot be null with dynamic routing");
 
     String routeValue = extractRouteValue(record.value(), routeField);
     if (routeValue != null) {
-      String tableName = routeValue.toLowerCase();
+      String tableName;
+      if (defaultDatabase != null) {
+        tableName = defaultDatabase + "." + routeValue.toLowerCase();
+      } else {
+        tableName = routeValue.toLowerCase();
+      }
       writerForTable(tableName, record, true).write(record);
     }
   }
